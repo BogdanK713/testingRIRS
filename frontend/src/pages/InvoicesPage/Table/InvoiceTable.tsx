@@ -1,333 +1,262 @@
 import Table from "react-bootstrap/Table";
 import { useState, useEffect } from "react";
-import { Button } from "react-bootstrap";
+import { Button, Modal, Form } from "react-bootstrap";
 import {
-	faTrash,
-	faFile,
-	faCaretLeft,
-	faCaretRight,
+  faTrash,
+  faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./InvoiceTable.css";
-import PageSelectModal from "./PageSelectModal";
 import axios from "axios";
-import { Invoice } from "../../../classes/Invoice";
-import { Link } from "react-router-dom";
-import {useAuth} from "@clerk/clerk-react";
-import {RequestUtil} from "../../../utils/RequestUtil";
 
 const InvoiceTable = () => {
-	const [currentPage, setCurrentPage] = useState(1);
-	const [totalPages, setTotalPages] = useState<number>(1);
-	const [pages, setPages] = useState<number[]>([1, 2, 5, 6]);
-	const [invoices, setInvoices] = useState<Invoice[]>();
-	const [showModal, setShowModal] = useState(false);
-	const [loading, setLoading] = useState<boolean>(true);
-	const auth = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
-	// const getAllData = async () => {
-	// 	try {
-	// 		const response = await axios.get("/api/db/all");
-	// 		// Map the response data to Invoice instances
-	// 		const invoiceData: Invoice[] = response.data.map((data: any) =>
-	// 			Invoice.fromJSON(data)
-	// 		);
-	// 		setInvoices(invoiceData); // Set the state with the array of Invoice objects
-	// 	} catch (error) {
-	// 		console.error("Error fetching invoices:", error);
-	// 	} finally {
-	// 		setLoading(false); // Set loading to false after fetch is complete
-	// 	}
-	// };
+  const getInvoicesByPage = async (page: number) => {
+    try {
+      const response = await axios.get(`/api/db/all/${page}`);
+      setInvoices(response.data);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	const getDataByPage = async (page: number) => {
-		try {
-			const response = await axios.get("/api/db/all/" + page, RequestUtil.getDefaultRequestConfig(await auth.getToken()));
-			// Map the response data to Invoice instances
-			const invoiceData: Invoice[] = response.data.map((data: any) =>
-				Invoice.fromJSON(data)
-			);
-			setInvoices(invoiceData); // Set the state with the array of Invoice objects
-		} catch (error) {
-			console.error("Error fetching invoices:", error);
-		} finally {
-			setLoading(false); // Set loading to false after fetch is complete
-		}
-	};
+  const getTotalPages = async () => {
+    try {
+      const response = await axios.get("/api/db/pages");
+      setTotalPages(response.data);
+    } catch (error) {
+      console.error("Error fetching page count:", error);
+    }
+  };
 
-	const getTotalPages = async () => {
-		try {
-			const response = await axios.get("/api/db/pages", RequestUtil.getDefaultRequestConfig(await auth.getToken()));
-			// Map the response data to Invoice instances
-			setTotalPages(response.data);
-			setPagesArray(response.data);
-		} catch (error) {
-			console.error("Error fetching page count:", error);
-		}
-	};
+  const deleteInvoice = async (id: string) => {
+    try {
+      await axios.delete(`/api/db/delete/${id}`);
+      refreshTable(currentPage);
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+    }
+  };
 
-	const deleteInvoice = async (id: string) => {
-		try {
-			await axios.delete("api/db/delete/" + id);
-			// Map the response data to Invoice instances
-			refreshData(currentPage);
-		} catch (error) {
-			console.error("Error fetching page count:", error);
-		}
-	};
+  const handleEdit = (invoice: any) => {
+    setSelectedInvoice(invoice);
+    setShowEditModal(true);
+  };
 
-	const setPagesArray = (total: number) => {
-		if (total === 1) {
-			setPages([]);
-			return;
-		}
+  const handleSaveEdit = async () => {
+    if (selectedInvoice) {
+      try {
+        await axios.put(`/api/db/update/${selectedInvoice._id}`, selectedInvoice);
+        setShowEditModal(false);
+        refreshTable(currentPage);
+      } catch (error) {
+        console.error("Error updating invoice:", error);
+        alert("Failed to update invoice.");
+      }
+    }
+  };
 
-		const arr: number[] = [1, 2, total - 1, total];
+  const refreshTable = async (page: number) => {
+    await getInvoicesByPage(page);
+  };
 
-		if (arr[0] === arr[2] && arr[1] === arr[3]) {
-			arr[2] = -1;
-			arr[3] = -1;
-		}
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    refreshTable(page);
+  };
 
-		console.log(arr);
+  useEffect(() => {
+    getTotalPages();
+    refreshTable(1);
+  }, []);
 
-		setPages(arr);
-	};
-
-	useEffect(() => {
-		getTotalPages();
-		refreshData(1);
-	}, []);
-
-	const onPageClicked = (page: number) => {
-		setCurrentPage(page);
-		refreshData(page);
-	};
-
-	const decreasePage = () => {
-		if (currentPage > 1) {
-			setCurrentPage(currentPage - 1);
-			refreshData(currentPage - 1);
-		}
-	};
-
-	const increasePage = () => {
-		if (currentPage < totalPages!) {
-			setCurrentPage(currentPage + 1);
-			refreshData(currentPage + 1);
-		}
-	};
-
-	const refreshData = async (page: number) => {
-		await getDataByPage(page);
-	};
-
-	const closeModal = () => {
-		setShowModal(false);
-	};
-
-	if (loading) {
-		return <h3>Loading</h3>;
-	}
-
-	return (
-		<>
-			{invoices !== null ? (
-				<Table striped bordered hover>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Naziv</th>
-							<th>Znesek</th>
-							<th>Datum izdaje</th>
-							<th>Rok plačila</th>
-							<th>Plačnik</th>
-							<th>Status</th>
-							<th>&nbsp;</th>
-						</tr>
-					</thead>
-					<tbody>
-						{invoices?.map((data, index) => (
-							<tr>
-								<td>{(currentPage - 1) * 5 + index + 1}</td>
-								<td>{data.name}</td>
-								<td>{data.amount} €</td>
-								<td>{data.date.toLocaleDateString()}</td>
-								<td
-									className={
-										data.dueDate > data.date
-											? "text-green"
-											: "text-red"
-									}
-								>
-									{data.dueDate.toLocaleDateString()}
-								</td>
-								<td>{data.payer}</td>
-								<td>
-									<span
-										className={
-											"status-tag " +
-											(data.statusSent
-												? "text-green"
-												: "text-red")
-										}
-									>
-										{data.statusSent
-											? "Poslano"
-											: "Neposlano"}
-									</span>
-									<span
-										className={
-											data.statusPaid
-												? "text-green"
-												: "text-red"
-										}
-									>
-										{data.statusPaid
-											? "Plačano"
-											: "Neplačano"}
-									</span>
-								</td>
-								<td id="table-button-container">
-									<Link to={"/invoices/" + data._id}>
-										<Button variant="primary" size="sm">
-											<FontAwesomeIcon icon={faFile} />
-										</Button>
-									</Link>
-									<Button
-										variant="danger"
-										size="sm"
-										onClick={() => deleteInvoice(data._id)}
-									>
-										<FontAwesomeIcon icon={faTrash} />
-									</Button>
-								</td>
-							</tr>
-						))}
-					</tbody>
-					<tfoot>
-						{pages.length > 0 ? (
-							<tr>
-								<td colSpan={8}>
-									<div id="pager-container">
-										<div id="pager">
-											<div
-												className="pager-element pager-arrow-left"
-												onClick={() => decreasePage()}
-											>
-												<FontAwesomeIcon
-													icon={faCaretLeft}
-												/>
-											</div>
-											<div
-												className={
-													"pager-element pager-start" +
-													(pages[0] == currentPage
-														? " bold bg-blue text-white"
-														: "")
-												}
-												onClick={() =>
-													onPageClicked(pages[0])
-												}
-											>
-												{pages[0]}
-											</div>
-											<div
-												className={
-													"pager-element" +
-													(pages[1] == currentPage
-														? " bold bold bg-blue text-white"
-														: "")
-												}
-												onClick={() =>
-													onPageClicked(pages[1])
-												}
-											>
-												{pages[1]}
-											</div>
-											{pages[2] !== -1 &&
-											pages[3] !== -1 &&
-											currentPage > 2 &&
-											currentPage < totalPages - 1 ? (
-												<div
-													className="pager-element bold bold bg-blue text-white"
-													onClick={() =>
-														setShowModal(true)
-													}
-												>
-													{currentPage}
-												</div>
-											) : (
-												<div
-													className="pager-element pager-middle"
-													onClick={() =>
-														setShowModal(true)
-													}
-												>
-													...
-												</div>
-											)}
-											{pages[2] !== -1 ? (
-												<div
-													className={
-														"pager-element" +
-														(pages[2] == currentPage
-															? " bold bold bg-blue text-white"
-															: "")
-													}
-													onClick={() =>
-														onPageClicked(pages[2])
-													}
-												>
-													{pages[2]}
-												</div>
-											) : (
-												<></>
-											)}
-											{pages[3] !== -1 ? (
-												<div
-													className={
-														"pager-element pager-end" +
-														(pages[3] == currentPage
-															? " bold bold bg-blue text-white"
-															: "")
-													}
-													onClick={() =>
-														onPageClicked(pages[3])
-													}
-												>
-													{pages[3]}
-												</div>
-											) : (
-												<></>
-											)}
-											<div
-												className="pager-element pager-arrow-right"
-												onClick={() => increasePage()}
-											>
-												<FontAwesomeIcon
-													icon={faCaretRight}
-												/>
-											</div>
-										</div>
-									</div>
-								</td>
-							</tr>
-						) : (
-							<></>
-						)}
-					</tfoot>
-				</Table>
-			) : (
-				<h2>No invoices</h2>
-			)}
-			<PageSelectModal
-				setPage={setCurrentPage}
-				showModal={showModal}
-				onCloseModal={closeModal}
-			/>
-		</>
-	);
+  return (
+    <>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Naziv</th>
+            <th>Znesek</th>
+            <th>Datum izdaje</th>
+            <th>Rok plačila</th>
+            <th>Plačnik</th>
+            <th>Status</th>
+            <th>Akcije</th>
+          </tr>
+        </thead>
+        <tbody>
+          {invoices.map((invoice, index) => (
+            <tr key={invoice._id}>
+              <td>{(currentPage - 1) * 5 + index + 1}</td>
+              <td>{invoice.name}</td>
+              <td>{invoice.amount} €</td>
+              <td>{new Date(invoice.date).toLocaleDateString()}</td>
+              <td
+                className={
+                  new Date(invoice.dueDate) > new Date(invoice.date)
+                    ? "text-green"
+                    : "text-red"
+                }
+              >
+                {new Date(invoice.dueDate).toLocaleDateString()}
+              </td>
+              <td>{invoice.payer}</td>
+              <td>
+                <span
+                  className={
+                    invoice.statusSent ? "text-green" : "text-red"
+                  }
+                >
+                  {invoice.statusSent ? "Poslano" : "Neposredovano"}
+                </span>
+                {" / "}
+                <span
+                  className={
+                    invoice.statusPaid ? "text-green" : "text-red"
+                  }
+                >
+                  {invoice.statusPaid ? "Plačano" : "Neplačano"}
+                </span>
+              </td>
+              <td>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleEdit(invoice)}
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => deleteInvoice(invoice._id)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Uredi račun</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formName">
+              <Form.Label>Naziv</Form.Label>
+              <Form.Control
+                type="text"
+                value={selectedInvoice?.name || ""}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    name: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formAmount">
+              <Form.Label>Znesek</Form.Label>
+              <Form.Control
+                type="number"
+                value={selectedInvoice?.amount || ""}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    amount: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formDate">
+              <Form.Label>Datum izdaje</Form.Label>
+              <Form.Control
+                type="date"
+                value={selectedInvoice?.date?.split("T")[0] || ""}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    date: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formDueDate">
+              <Form.Label>Rok plačila</Form.Label>
+              <Form.Control
+                type="date"
+                value={selectedInvoice?.dueDate?.split("T")[0] || ""}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    dueDate: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formPayer">
+              <Form.Label>Plačnik</Form.Label>
+              <Form.Control
+                type="text"
+                value={selectedInvoice?.payer || ""}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    payer: e.target.value,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formStatusSent">
+              <Form.Check
+                type="checkbox"
+                label="Poslano"
+                checked={selectedInvoice?.statusSent || false}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    statusSent: e.target.checked,
+                  })
+                }
+              />
+            </Form.Group>
+            <Form.Group controlId="formStatusPaid">
+              <Form.Check
+                type="checkbox"
+                label="Plačano"
+                checked={selectedInvoice?.statusPaid || false}
+                onChange={(e) =>
+                  setSelectedInvoice({
+                    ...selectedInvoice,
+                    statusPaid: e.target.checked,
+                  })
+                }
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Prekliči
+          </Button>
+          <Button variant="primary" onClick={handleSaveEdit}>
+            Shrani spremembe
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
 };
 
 export default InvoiceTable;
