@@ -1,0 +1,21 @@
+#button-container {
+    display: flex;
+    justify-content: flex-end; /* Align all buttons to the right */
+    gap: 15px; /* Add spacing between the groups of buttons */
+    align-items: center;
+    margin-bottom: 20px; /* Add space between buttons and the rest of the page */
+  }
+  
+  #import-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Add spacing between import elements */
+  }
+  
+  .left-buttons,
+  .right-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Add spacing between buttons */
+  }
+  

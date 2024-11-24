@@ -1,32 +1,40 @@
-import React from "react";
-import AddUpdateInvoice, { InvoiceData } from "./AddUpdateInvoice";
+import React, { useState } from "react";
+import "./InvoicesPage.css";
+import InvoiceTable from "./Table/InvoiceTable";
+import ExportInvoices from "./ExportInvoices";
+import ExcelFileInput from "./ExcelImporter/ExcelImporter";
+import AddInvoiceModal from "./AddInvoiceModal";
 
 const InvoicesPage: React.FC = () => {
-    const handleSaveInvoice = (invoiceData: InvoiceData) => {
-        console.log("Invoice saved:", invoiceData);
-    };
+  const [showAddModal, setShowAddModal] = useState(false);
 
-    // Dummy data for testing the update mode
-    const dummyInvoice: InvoiceData = {
-        name: "Dummy Invoice",
-        amount: 100,
-        date: "2024-01-01",
-        dueDate: "2024-02-01",
-        payer: "Sample Payer",
-        statusSent: true,
-        statusPaid: false,
-    };
+  // Function to handle refreshing after adding or importing invoices
+  const handleRefresh = () => {
+    window.location.reload(); // Refresh the page
+  };
 
-    return (
-        <div>
-            <h2>Manage Invoices</h2>
-            {/* To test "add" mode */}
-            {/* <AddUpdateInvoice onSave={handleSaveInvoice} mode="add" /> */}
-            
-            {/* To test "edit" mode with initial data */}
-            <AddUpdateInvoice onSave={handleSaveInvoice} mode="edit" initialData={dummyInvoice} />
-        </div>
-    );
+  return (
+    <div id="table-container">
+      <h3>Računi</h3>
+      <div id="button-container">
+        <ExportInvoices />
+        <ExcelFileInput importInvoices={handleRefresh} />
+        <button
+          className="btn btn-primary"
+          style={{ marginLeft: "10px" }}
+          onClick={() => setShowAddModal(true)}
+        >
+          Dodaj nov račun
+        </button>
+      </div>
+      <InvoiceTable />
+      <AddInvoiceModal
+        show={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSaveSuccess={handleRefresh}
+      />
+    </div>
+  );
 };
 
 export default InvoicesPage;

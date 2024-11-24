@@ -4,6 +4,7 @@ import "./NavBar.css";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
+import {SignedIn, SignedOut, SignOutButton} from "@clerk/clerk-react";
 
 const NavBar: React.FC = () => {
 	return (
@@ -14,15 +15,21 @@ const NavBar: React.FC = () => {
 				</Link>
 			</div>
 			<div>
-				<Link className="nav-button" to="/invoices">
-					Invoices
-				</Link>
-				<Link className="nav-button" to="/login">
-					<Button variant="light" size="sm">Login</Button>
-				</Link>
-				<Link className="nav-button" to="/register">
-					<Button variant="light" size="sm">Register</Button>
-				</Link>
+				<SignedOut>
+					<Link className="nav-button" to="/auth">
+						<Button variant="light" size="sm">Sign in</Button>
+					</Link>
+				</SignedOut>
+				<SignedIn>
+					<Link className="nav-button" to="/invoices">
+						Invoices
+					</Link>
+					<SignOutButton>
+						<Button variant="light" size="sm">
+							Sign out
+						</Button>
+					</SignOutButton>
+				</SignedIn>
 			</div>
 		</nav>
 	);
