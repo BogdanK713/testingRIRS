@@ -10,11 +10,22 @@ const {
 } = require("../src/pouchdb");
 const router = express.Router();
 
+// Route to export all invoices
+router.get("/export", async (req, res) => {
+    try {
+        const response = await getAllDocuments();
+        const invoices = response.rows.map((row) => row.doc); // Extract all invoice data
+        res.setHeader("Content-Disposition", "attachment; filename=invoices.json");
+        res.setHeader("Content-Type", "application/json");
+        res.send(JSON.stringify(invoices, null, 2)); // Send JSON file
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 // Route to add a document
 router.post("/add", async (req, res) => {
 	try {
 		const doc = req.body;
-		doc.userId = req.auth.userId;
 		const response = await addDocument(doc);
 		res.json(response);
 	} catch (error) {
@@ -26,7 +37,6 @@ router.post("/add", async (req, res) => {
 router.post("/addList", async (req, res) => {
 	try {
 		const docs = req.body;
-		docs.forEach(d => d.userId = req.auth.userId)
 		const response = await addDocumentsList(docs);
 		res.json(response);
 	} catch (error) {
