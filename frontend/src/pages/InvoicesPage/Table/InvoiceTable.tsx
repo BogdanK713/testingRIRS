@@ -1,21 +1,17 @@
 import Table from "react-bootstrap/Table";
 import { useState, useEffect } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
-import {
-  faTrash,
-  faEdit,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./InvoiceTable.css";
 import axios from "axios";
 
 const InvoiceTable = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [currentPage] = useState(1); // Only keeping currentPage for display
+  const [invoices, setInvoices] = useState<any[]>([]); // List of invoices
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
+  const [showEditModal, setShowEditModal] = useState(false); // Modal visibility state
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null); // Selected invoice for editing
 
   const getInvoicesByPage = async (page: number) => {
     try {
@@ -27,15 +23,6 @@ const InvoiceTable = () => {
       setInvoices([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getTotalPages = async () => {
-    try {
-      const response = await axios.get("/api/db/pages");
-      setTotalPages(response.data);
-    } catch (error) {
-      console.error("Error fetching page count:", error);
     }
   };
 
@@ -70,14 +57,8 @@ const InvoiceTable = () => {
     await getInvoicesByPage(page);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    refreshTable(page);
-  };
-
   useEffect(() => {
-    getTotalPages();
-    refreshTable(1);
+    refreshTable(1); // Fetch invoices on component mount
   }, []);
 
   return (
@@ -111,7 +92,7 @@ const InvoiceTable = () => {
           ) : (
             invoices.map((invoice, index) => (
               <tr key={invoice._id}>
-                <td>{(currentPage - 1) * 5 + index + 1}</td>
+                <td>{index + 1}</td>
                 <td>{invoice.name}</td>
                 <td>{invoice.amount} €</td>
                 <td>{new Date(invoice.date).toLocaleDateString()}</td>
