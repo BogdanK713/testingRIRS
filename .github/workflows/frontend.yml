@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: frontend-build
-          path: frontend/build/ # Adjust path if your frontend output directory differs
+          path: frontend/dist/ 
 
   # Frontend test job
   test-frontend:
