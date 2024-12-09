@@ -71,7 +71,7 @@ jobs:
     - name: Run tests with coverage
       run: |
         cd backend
-        npm test:ci
+        npm run test:ci
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
