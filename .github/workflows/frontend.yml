@@ -1,0 +1,85 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Frontend build job
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build application
+      run: |
+        cd frontend
+        npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build
+        path: frontend/build/
+
+  # Frontend test job
+  test-frontend:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: frontend/node_modules
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-frontend-
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run tests with coverage
+      run: |
+        cd frontend
+        npm test -- --coverage
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-coverage
+        path: frontend/coverage/

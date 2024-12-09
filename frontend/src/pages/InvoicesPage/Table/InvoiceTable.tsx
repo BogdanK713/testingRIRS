@@ -20,9 +20,11 @@ const InvoiceTable = () => {
   const getInvoicesByPage = async (page: number) => {
     try {
       const response = await axios.get(`/api/db/all/${page}`);
-      setInvoices(response.data);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setInvoices(data);
     } catch (error) {
       console.error("Error fetching invoices:", error);
+      setInvoices([]);
     } finally {
       setLoading(false);
     }
@@ -94,57 +96,71 @@ const InvoiceTable = () => {
           </tr>
         </thead>
         <tbody>
-          {invoices.map((invoice, index) => (
-            <tr key={invoice._id}>
-              <td>{(currentPage - 1) * 5 + index + 1}</td>
-              <td>{invoice.name}</td>
-              <td>{invoice.amount} €</td>
-              <td>{new Date(invoice.date).toLocaleDateString()}</td>
-              <td
-                className={
-                  new Date(invoice.dueDate) > new Date(invoice.date)
-                    ? "text-green"
-                    : "text-red"
-                }
-              >
-                {new Date(invoice.dueDate).toLocaleDateString()}
-              </td>
-              <td>{invoice.payer}</td>
-              <td>
-                <span
-                  className={
-                    invoice.statusSent ? "text-green" : "text-red"
-                  }
-                >
-                  {invoice.statusSent ? "Poslano" : "Neposredovano"}
-                </span>
-                {" / "}
-                <span
-                  className={
-                    invoice.statusPaid ? "text-green" : "text-red"
-                  }
-                >
-                  {invoice.statusPaid ? "Plačano" : "Neplačano"}
-                </span>
-              </td>
-              <td>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => handleEdit(invoice)}
-                >
-                  <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => deleteInvoice(invoice._id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
+          {loading ? (
+            <tr>
+              <td colSpan={8} style={{ textAlign: "center" }}>
+                Loading...
               </td>
             </tr>
-          ))}
+          ) : invoices.length === 0 ? (
+            <tr>
+              <td colSpan={8} style={{ textAlign: "center" }}>
+                No invoices found.
+              </td>
+            </tr>
+          ) : (
+            invoices.map((invoice, index) => (
+              <tr key={invoice._id}>
+                <td>{(currentPage - 1) * 5 + index + 1}</td>
+                <td>{invoice.name}</td>
+                <td>{invoice.amount} €</td>
+                <td>{new Date(invoice.date).toLocaleDateString()}</td>
+                <td
+                  className={
+                    new Date(invoice.dueDate) > new Date(invoice.date)
+                      ? "text-green"
+                      : "text-red"
+                  }
+                >
+                  {new Date(invoice.dueDate).toLocaleDateString()}
+                </td>
+                <td>{invoice.payer}</td>
+                <td>
+                  <span
+                    className={
+                      invoice.statusSent ? "text-green" : "text-red"
+                    }
+                  >
+                    {invoice.statusSent ? "Poslano" : "Neposredovano"}
+                  </span>
+                  {" / "}
+                  <span
+                    className={
+                      invoice.statusPaid ? "text-green" : "text-red"
+                    }
+                  >
+                    {invoice.statusPaid ? "Plačano" : "Neplačano"}
+                  </span>
+                </td>
+                <td>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleEdit(invoice)}
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => deleteInvoice(invoice._id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </Button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </Table>
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>

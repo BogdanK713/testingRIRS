@@ -7,21 +7,22 @@ import cors from "cors";
 const app = express();
 const PORT = 3000;
 
-// CORS Configuration
+// Configure CORS
 const corsOptions = {
-  origin: "http://localhost:5173", // Allow requests from frontend
-  credentials: true,              // Allow credentials (cookies, headers, etc.)
+  origin: "http://localhost:5173",
+  credentials: true,
+  optionsSuccessStatus: 200,
 };
 
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Parse JSON requests
+// Middleware
+app.use(cors(corsOptions)); // Apply CORS
+app.options("*", cors(corsOptions)); // Handle preflight requests
 app.use(bodyParser.json());
 
-// API Routes
+// Routes
 app.use("/db", dbRoutes);
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

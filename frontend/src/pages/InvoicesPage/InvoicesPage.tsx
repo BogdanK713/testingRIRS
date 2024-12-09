@@ -8,9 +8,8 @@ import AddInvoiceModal from "./AddInvoiceModal";
 const InvoicesPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // Function to handle refreshing after adding or importing invoices
   const handleRefresh = () => {
-    window.location.reload(); // Refresh the page
+    window.location.reload();
   };
 
   return (

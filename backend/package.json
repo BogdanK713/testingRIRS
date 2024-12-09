@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.mjs",
   "scripts": {
-    "start": "nodemon index.mjs"
+    "start": "nodemon index.mjs",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "pouchdb": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "vitest": "^2.1.7"
   }
 }
