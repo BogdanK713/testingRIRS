@@ -8,6 +8,26 @@ const {
 	updateDocument,
 	destroy,
 } = require("../src/pouchdb");
+const nodemailer = require("nodemailer")
+require('dotenv').config();
+
+const transporter = nodemailer.createTransport({
+    host: 'smtp.office365.com', // Outlook SMTP server
+    port: 587, // Port number
+    secure: false, // Use TLS
+    auth: {
+        user: process.env.EMAIL_USER, // Your Outlook email address
+        pass: process.env.EMAIL_PASS, // Your email password or app password
+    },
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("SMTP Configuration Error:", error);
+    } else {
+        console.log("SMTP Server is ready:", success);
+    }
+});
 const router = express.Router();
 
 // Route to export all invoices
@@ -128,6 +148,30 @@ router.get("/wipe", async (req, res) => {
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
+});
+router.post("/contact", async (req, res) => {
+    const { payerName, payerEmail, message } = req.body;
+
+    // Validate incoming data
+    if (!payerName || !payerEmail || !message) {
+        return res.status(400).json({ error: "All fields are required." });
+    }
+
+    try {
+        // Simulate email sending by logging to the console
+        console.log("Simulating email send...");
+        console.log(`To: ${payerEmail}`);
+        console.log(`Subject: Message from ${payerName}`);
+        console.log(`Message: ${message}`);
+
+        // Simulate delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        res.status(200).json({ message: "Email simulated successfully!" });
+    } catch (error) {
+        console.error("Error simulating email:", error);
+        res.status(500).json({ error: "Failed to simulate email." });
+    }
 });
 
 module.exports = router;

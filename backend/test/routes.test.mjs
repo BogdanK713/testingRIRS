@@ -86,4 +86,36 @@ describe("API Routes", () => {
     const updateBody = await updateRes.json();
     expect(updateBody.message).toBe("Document updated successfully");
   });
+  it("should simulate email sending", async () => {
+    const res = await fetch("http://localhost:3000/db/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        payerName: "John Doe",
+        payerEmail: "john.doe@example.com",
+        message: "Hello, this is a test message.",
+      }),
+    });
+  
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.message).toBe("Email simulated successfully!");
+  });
+  
+  it("should return an error for missing fields", async () => {
+    const res = await fetch("http://localhost:3000/db/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        payerName: "John Doe",
+        payerEmail: "", // Missing email
+        message: "Hello, this is a test message.",
+      }),
+    });
+  
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe("All fields are required.");
+  });
+  
 });
