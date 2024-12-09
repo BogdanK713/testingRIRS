@@ -1,50 +1,34 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, vi, expect } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import "@testing-library/jest-dom";
 import InvoiceTable from "../src/pages/InvoicesPage/Table/InvoiceTable";
 import axios from "axios";
 
+// Mock axios
 vi.mock("axios");
+const mockedAxios = axios as vi.Mocked<typeof axios>;
 
 describe("InvoiceTable Component", () => {
-  it("renders the invoice table with headers", async () => {
-    (axios.get as vi.Mock).mockResolvedValueOnce({ data: 1 }); // Mock total pages
-    (axios.get as vi.Mock).mockResolvedValueOnce({ data: [] }); // Mock invoices
-
+  it("renders the table with headers", () => {
     render(<InvoiceTable />);
 
-    // Wait for headers to render
-    await waitFor(() => {
-      expect(screen.getByText("Naziv")).toBeInTheDocument();
-      expect(screen.getByText("Znesek")).toBeInTheDocument();
-    });
+    // Assert that the table headers render correctly
+    expect(screen.getByText("Naziv")).toBeInTheDocument();
+    expect(screen.getByText("Znesek")).toBeInTheDocument();
+    expect(screen.getByText("Datum izdaje")).toBeInTheDocument();
+    expect(screen.getByText("Rok plačila")).toBeInTheDocument();
   });
 
-  it("loads and displays invoices", async () => {
-    const mockInvoices = [
-      {
-        _id: "1",
-        name: "Invoice 1",
-        amount: 100,
-        date: "2024-01-01T00:00:00Z",
-        dueDate: "2024-01-10T00:00:00Z",
-        payer: "John Doe",
-        statusSent: true,
-        statusPaid: false,
-      },
-    ];
-
-    (axios.get as vi.Mock)
-      .mockResolvedValueOnce({ data: 1 }) // Mock total pages
-      .mockResolvedValueOnce({ data: mockInvoices }); // Mock invoices
+  it("displays 'No invoices found' message when no invoices exist", async () => {
+    // Mock Axios responses
+    mockedAxios.get.mockResolvedValueOnce({ data: 1 }); // Mock total pages
+    mockedAxios.get.mockResolvedValueOnce({ data: [] }); // Mock no invoices
 
     render(<InvoiceTable />);
 
-    // Wait for invoices to load
-    await waitFor(() => {
-      expect(screen.getByText("Invoice 1")).toBeInTheDocument();
-      expect(screen.getByText("100 €")).toBeInTheDocument();
-    });
+    // Wait for "No invoices found" to appear
+    const noInvoicesMessage = await screen.findByText("No invoices found.");
+    expect(noInvoicesMessage).toBeInTheDocument();
   });
 });

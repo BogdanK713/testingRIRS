@@ -4,7 +4,8 @@
   "main": "index.mjs",
   "scripts": {
     "start": "nodemon index.mjs",
-    "test": "vitest --coverage"
+    "test": "vitest",
+    "test:ci": "vitest --coverage"
   },
   "keywords": [],
   "author": "",
