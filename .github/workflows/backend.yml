@@ -14,66 +14,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
+    # Step 2: Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
 
-      # Step 3: Cache dependencies
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        with:
-          path: backend/node_modules
-          key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-backend-
+    # Step 3: Cache dependencies
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: backend/node_modules
+        key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-backend-
 
-      # Step 4: Install dependencies
-      - name: Install dependencies
-        run: |
-          cd backend
-          npm ci
+    # Step 4: Install dependencies
+    - name: Install dependencies
+      run: |
+        cd backend
+        npm ci
 
-      # Step 5: Build backend (if applicable)
-      - name: Build backend
-        run: |
-          cd backend
-          npm run build # Ensure this command exists or replace it with relevant backend build steps
+    # Step 5: Start backend server
+    - name: Start backend server
+      run: |
+        cd backend
+        npm start &
+      env:
+        NODE_ENV: test
 
-      # Step 6: Start backend server
-      - name: Start backend server
-        run: |
-          cd backend
-          npm start &
-        env:
-          NODE_ENV: test
+    # Step 6: Wait for the backend server to be ready
+    - name: Wait for backend server to be ready
+      run: |
+        npx wait-on http://localhost:3000/db/all
 
-      # Step 7: Wait for the backend server to be ready
-      - name: Wait for backend server to be ready
-        run: |
-          npx wait-on http://localhost:3000/db/all
+    # Step 7: Run tests with coverage
+    - name: Run tests with coverage
+      run: |
+        cd backend
+        npm run test:ci
 
-      # Step 8: Run tests with coverage
-      - name: Run tests with coverage
-        run: |
-          cd backend
-          npm run test:ci
-
-      # Step 9: Upload coverage report
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-coverage
-          path: backend/coverage/
-
-      # Step 10: Upload backend build artifacts
-      - name: Upload backend build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: backend-build
-          path: backend/build/ # Adjust this to your actual backend build output directory
+    # Step 8: Upload coverage report
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-coverage
+        path: backend/coverage/
