@@ -21,6 +21,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",
     "nodemon": "^3.1.7",
-    "vitest": "^2.1.7"
+    "vitest": "^2.1.7",
+    "wait-on": "^8.0.1"
   }
 }
