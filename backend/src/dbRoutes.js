@@ -11,23 +11,7 @@ const {
 const nodemailer = require("nodemailer")
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.office365.com', // Outlook SMTP server
-    port: 587, // Port number
-    secure: false, // Use TLS
-    auth: {
-        user: process.env.EMAIL_USER, // Your Outlook email address
-        pass: process.env.EMAIL_PASS, // Your email password or app password
-    },
-});
 
-transporter.verify((error, success) => {
-    if (error) {
-        console.error("SMTP Configuration Error:", error);
-    } else {
-        console.log("SMTP Server is ready:", success);
-    }
-});
 const router = express.Router();
 
 // Route to export all invoices
@@ -171,6 +155,24 @@ router.post("/contact", async (req, res) => {
     } catch (error) {
         console.error("Error simulating email:", error);
         res.status(500).json({ error: "Failed to simulate email." });
+    }
+});
+router.get("/overdue", async (req, res) => {
+    try {
+        const response = await getAllDocuments();
+        const currentDate = new Date();
+
+        const overdueInvoices = response.rows
+            .map((row) => row.doc)
+            .filter(
+                (invoice) =>
+                    invoice.dueDate && new Date(invoice.dueDate) < currentDate && !invoice.statusPaid
+            );
+
+        res.json(overdueInvoices);
+    } catch (error) {
+        console.error("Error fetching overdue invoices:", error);
+        res.status(500).json({ error: "Failed to fetch overdue invoices" });
     }
 });
 

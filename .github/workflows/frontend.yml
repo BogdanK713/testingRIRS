@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: frontend-build
-          path: frontend/dist/ 
+          path: frontend/dist/
 
   # Frontend test job
   test-frontend:
@@ -95,3 +95,28 @@ jobs:
         with:
           name: frontend-coverage
           path: frontend/coverage/
+
+  # Docker build and push job
+  docker-build-and-push-frontend:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Build Docker Image
+      - name: Build Docker Image
+        run: |
+          docker build -t frontend-app ./frontend
+
+      # Step 3: Login to Docker Hub
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Step 4: Push Docker Image
+      - name: Push Docker Image
+        run: |
+          docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app
