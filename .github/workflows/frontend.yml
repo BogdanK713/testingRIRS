@@ -50,6 +50,9 @@ jobs:
   docker-build-and-push-frontend:
     needs: build-frontend
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 'Development' || 'Production' }}
+      url: ${{ github.ref_name == 'production' && 'https://my-production-site.com' || 'https://my-dev-site.com' }}
 
     steps:
       - name: Checkout code
@@ -62,20 +65,13 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Tag and push for Development environment
-      - name: Push Docker Image (Development)
-        if: github.ref_name == 'main'
+      # Push Docker Image for the correct environment
+      - name: Push Docker Image
         run: |
-          docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app:dev
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:dev
-        environment:
-          name: Development
-
-      # Tag and push for Production environment with manual approval
-      - name: Push Docker Image (Production)
-        if: github.ref_name == 'production'
-        run: |
-          docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app:prod
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:prod
-        environment:
-          name: Production
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app:dev
+            docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:dev
+          elif [[ "${{ github.ref_name }}" == "production" ]]; then
+            docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app:prod
+            docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:prod
+          fi
