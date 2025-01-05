@@ -10,16 +10,17 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-// Configure CORS
 const corsOptions = {
-  origin: "https://testing-rirs.vercel.app",
-  credentials: true,
+  origin: ["https://testing-rirs.vercel.app"], // Allow your Vercel frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Allow credentials if you use cookies or auth headers
   optionsSuccessStatus: 200,
 };
 
-// Middleware
-app.use(cors(corsOptions)); // Apply CORS
+app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // Handle preflight requests
+
 app.use(bodyParser.json());
 
 // Routes
