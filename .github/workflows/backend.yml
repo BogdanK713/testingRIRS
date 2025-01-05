@@ -48,10 +48,17 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Quality Gate Check
+      - name: Wait for SonarCloud processing
+        run: sleep 30
+
+      - name: Check Quality Gate
         run: |
-          curl -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_analyses/search?project=${{ secrets.SONAR_PROJECT_KEY }}" |
-          jq '.analyses[0].status == "SUCCESS"' || exit 1
+          STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${{ secrets.SONAR_PROJECT_KEY }}" | jq -r '.projectStatus.status')
+          echo "Quality Gate Status: $STATUS"
+          if [[ "$STATUS" != "OK" ]]; then
+            echo "Quality gate failed. Blocking pipeline."
+            exit 1
+          fi
 
       - name: Start backend server
         run: |
