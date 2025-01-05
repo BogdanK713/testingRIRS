@@ -37,15 +37,16 @@ jobs:
           npm ci
 
       - name: Run SonarCloud Analysis
-        uses: sonarsource/sonarcloud-github-action@v4.0.0
+        uses: SonarSource/sonarqube-scan-action@v4.1.0
         with:
-          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
-          organization: ${{ secrets.SONAR_ORGANIZATION }}
-          token: ${{ secrets.SONAR_TOKEN }}
           args: >
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.sources=backend
             -Dsonar.exclusions=**/node_modules/**,**/dist/**
             -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Quality Gate Check
         run: |
