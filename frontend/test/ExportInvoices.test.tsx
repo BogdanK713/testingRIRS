@@ -65,7 +65,7 @@ describe("ExportInvoices Component", () => {
 
     // Wait for axios to be called
     await new Promise((resolve) => setTimeout(resolve, 100));
-    expect(axios.get).toHaveBeenCalledWith("http://localhost:3000/db/export", {
+    expect(axios.get).toHaveBeenCalledWith("https://testingiris.onrender.com/db/export", {
       responseType: "blob",
     });
   });

@@ -14,7 +14,7 @@ const ExportInvoices: React.FC<ExportInvoicesProps> = ({
 }) => {
   const handleExportInvoices = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/db/export", {
+      const response = await axios.get("https://testingiris.onrender.com/db/export", {
         responseType: "blob", // Treat the response as a file
       });
 

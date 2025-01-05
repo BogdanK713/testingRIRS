@@ -44,7 +44,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({
 
   const handleSave = async () => {
     try {
-      await axios.post("http://localhost:3000/db/add", invoiceData);
+      await axios.post("https://testingiris.onrender.com/db/add", invoiceData);
       alert("Invoice added successfully!");
       onSaveSuccess(); // Notify parent to refresh the list
       onClose(); // Close the modal

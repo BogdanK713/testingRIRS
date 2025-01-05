@@ -3,14 +3,14 @@ import fetch from "node-fetch";
 
 describe("API Routes", () => {
   it("should fetch all documents", async () => {
-    const res = await fetch("http://localhost:3000/db/all");
+    const res = await fetch("https://testingiris.onrender.com/db/all");
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
   });
 
   it("should add a new document", async () => {
-    const res = await fetch("http://localhost:3000/db/add", {
+    const res = await fetch("https://testingiris.onrender.com/db/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Test Doc", content: "Test Content" }),
@@ -21,7 +21,7 @@ describe("API Routes", () => {
   });
 
   it("should fetch paginated documents", async () => {
-    const res = await fetch("http://localhost:3000/db/all/1");
+    const res = await fetch("https://testingiris.onrender.com/db/all/1");
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(Array.isArray(body)).toBe(true);
@@ -29,7 +29,7 @@ describe("API Routes", () => {
   });
 
   it("should return the number of pages", async () => {
-    const res = await fetch("http://localhost:3000/db/pages");
+    const res = await fetch("https://testingiris.onrender.com/db/pages");
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(typeof body).toBe("number");
@@ -38,7 +38,7 @@ describe("API Routes", () => {
 
   it("should delete a document by ID", async () => {
     // First, create a document to delete
-    const addRes = await fetch("http://localhost:3000/db/add", {
+    const addRes = await fetch("https://testingiris.onrender.com/db/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Delete Me", content: "To be deleted" }),
@@ -47,7 +47,7 @@ describe("API Routes", () => {
 
     // Then, delete the document
     const delRes = await fetch(
-      `http://localhost:3000/db/delete/${addedDoc.id}/${addedDoc.rev}`,
+      `https://testingiris.onrender.com/db/delete/${addedDoc.id}/${addedDoc.rev}`,
       { method: "DELETE" }
     );
     expect(delRes.status).toBe(200);
@@ -56,7 +56,7 @@ describe("API Routes", () => {
   });
 
   it("should fail to delete a document with an invalid ID", async () => {
-    const res = await fetch("http://localhost:3000/db/delete/invalid-id", {
+    const res = await fetch("https://testingiris.onrender.com/db/delete/invalid-id", {
       method: "DELETE",
     });
     expect(res.status).toBe(500); // Assuming 500 for invalid operations
@@ -66,7 +66,7 @@ describe("API Routes", () => {
 
   it("should update a document by ID", async () => {
     // First, create a document to update
-    const addRes = await fetch("http://localhost:3000/db/add", {
+    const addRes = await fetch("https://testingiris.onrender.com/db/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Old Title", content: "Old Content" }),
@@ -75,7 +75,7 @@ describe("API Routes", () => {
 
     // Then, update the document
     const updateRes = await fetch(
-      `http://localhost:3000/db/update/${addedDoc.id}`,
+      `https://testingiris.onrender.com/db/update/${addedDoc.id}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -87,7 +87,7 @@ describe("API Routes", () => {
     expect(updateBody.message).toBe("Document updated successfully");
   });
   it("should simulate email sending", async () => {
-    const res = await fetch("http://localhost:3000/db/contact", {
+    const res = await fetch("https://testingiris.onrender.com/db/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -103,7 +103,7 @@ describe("API Routes", () => {
   });
   
   it("should return an error for missing fields", async () => {
-    const res = await fetch("http://localhost:3000/db/contact", {
+    const res = await fetch("https://testingiris.onrender.com/db/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -30,7 +30,7 @@ const InvoicesPage: React.FC = () => {
 
   const fetchOverdueInvoices = async () => {
     try {
-      const response = await axios.get<Invoice[]>("http://localhost:3000/db/overdue");
+      const response = await axios.get<Invoice[]>("https://testingiris.onrender.com/db/overdue");
       setOverdueInvoices(response.data);
       setShowOverdueModal(true);
     } catch (error) {

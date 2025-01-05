@@ -15,7 +15,7 @@ const ContactPayer: React.FC = () => {
         setLoading(true); // Show loading state
 
         try {
-            const response = await fetch("http://localhost:3000/db/contact", {
+            const response = await fetch("https://testingiris.onrender.com/db/contact", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ payerName, payerEmail, message }),
