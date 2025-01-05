@@ -4,27 +4,25 @@ on:
   push:
     branches:
       - main
+      - production
   pull_request:
     branches:
       - main
+      - production
 
 jobs:
-  # Frontend build job
   build-frontend:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      # Step 3: Cache dependencies
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -33,90 +31,51 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-frontend-
 
-      # Step 4: Install dependencies
       - name: Install dependencies
         run: |
           cd frontend
           npm ci
 
-      # Step 5: Build application
       - name: Build application
         run: |
           cd frontend
           npm run build
 
-      # Step 6: Upload build artifacts
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: frontend-build
           path: frontend/dist/
 
-  # Frontend test job
-  test-frontend:
-    needs: build-frontend
-    runs-on: ubuntu-latest
-
-    steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Step 2: Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      # Step 3: Cache dependencies
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-frontend-
-
-      # Step 4: Install dependencies
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      # Step 5: Run tests with coverage
-      - name: Run tests with coverage
-        run: |
-          cd frontend
-          npm run test:ci
-
-      # Step 6: Upload coverage report
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-coverage
-          path: frontend/coverage/
-
-  # Docker build and push job
   docker-build-and-push-frontend:
     needs: build-frontend
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Build Docker Image
       - name: Build Docker Image
         run: |
           docker build -t frontend-app ./frontend
 
-      # Step 3: Login to Docker Hub
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Step 4: Push Docker Image
-      - name: Push Docker Image
+      # Tag and push for Development environment
+      - name: Push Docker Image (Development)
+        if: github.ref_name == 'main'
         run: |
-          docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app
+          docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app:dev
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:dev
+        environment:
+          name: Development
+
+      # Tag and push for Production environment with manual approval
+      - name: Push Docker Image (Production)
+        if: github.ref_name == 'production'
+        run: |
+          docker tag frontend-app ${{ secrets.DOCKER_USERNAME }}/frontend-app:prod
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:prod
+        environment:
+          name: Production

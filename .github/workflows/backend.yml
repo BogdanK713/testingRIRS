@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - production
   pull_request:
     branches:
       - main
+      - production
 
 jobs:
   build-and-test-backend:
@@ -59,6 +61,7 @@ jobs:
   docker-build-backend:
     needs: build-and-test-backend
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -70,7 +73,21 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Push Docker Image
+      # Tag and push for Development environment
+      - name: Push Docker Image (Development)
+        if: github.ref_name == 'main'
         run: |
-          docker tag backend-app ${{ secrets.DOCKER_USERNAME }}/backend-app
-          docker push ${{ secrets.DOCKER_USERNAME }}/backend-app
+          docker tag backend-app ${{ secrets.DOCKER_USERNAME }}/backend-app:dev
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend-app:dev
+        environment:
+          name: Development
+
+      # Tag and push for Production environment with manual approval
+      - name: Push Docker Image (Production)
+        if: github.ref_name == 'production'
+        run: |
+          docker tag backend-app ${{ secrets.DOCKER_USERNAME }}/backend-app:prod
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend-app:prod
+        environment:
+          name: Production
+          # Requires manual approval in GitHub UI for Production environment
