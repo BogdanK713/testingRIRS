@@ -12,7 +12,7 @@ const PORT = 3000;
 
 // Configure CORS
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: "https://testing-rirs.vercel.app",
   credentials: true,
   optionsSuccessStatus: 200,
 };
