@@ -41,6 +41,22 @@ jobs:
           cd frontend
           npm run build
 
+      - name: Run SonarCloud Analysis
+        uses: sonarsource/sonarcloud-github-action@v1.10
+        with:
+          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
+          organization: ${{ secrets.SONAR_ORGANIZATION }}
+          token: ${{ secrets.SONAR_TOKEN }}
+          args: >
+            -Dsonar.sources=frontend
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info
+
+      - name: Quality Gate Check
+        run: |
+          curl -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_analyses/search?project=${{ secrets.SONAR_PROJECT_KEY }}" |
+          jq '.analyses[0].status == "SUCCESS"' || exit 1
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -65,7 +81,6 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Push Docker Image for the correct environment
       - name: Push Docker Image
         run: |
           if [[ "${{ github.ref_name }}" == "main" ]]; then
