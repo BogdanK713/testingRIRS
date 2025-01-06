@@ -7,33 +7,36 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Ensure we use the PORT Render assigns
+const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-  origin: ["https://testing-rirs-d4ebz6fml-bogdans-projects-10589c63.vercel.app"], // Allow Vercel frontend
+  origin: "*", // Allow all for now
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   optionsSuccessStatus: 200,
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Catch-all for preflight requests
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
-// Middleware
 app.use(bodyParser.json());
 
-// Health check route (to confirm server is running)
+// Health check route
 app.get("/", (req, res) => {
-  res.status(200).send("Server is up and running!");
+  res.status(200).send("Server is running!");
 });
 
 // API Routes
 app.use("/db", dbRoutes);
 
+// Catch-all for 404 errors
+app.use((req, res) => {
+  res.status(404).json({ error: "Not Found" });
+});
+
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
