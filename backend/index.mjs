@@ -11,14 +11,14 @@ const app = express();
 const PORT = 3000;
 
 const corsOptions = {
-  origin: ["https://testing-rirs.vercel.app"], // Allow your Vercel frontend URL
+  origin: ["https://testing-rirs-d4ebz6fml-bogdans-projects-10589c63.vercel.app"], // Allow your Vercel frontend URL
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // Allow credentials if you use cookies or auth headers
   optionsSuccessStatus: 200,
 };
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // Handle preflight requests
 
 app.use(bodyParser.json());
